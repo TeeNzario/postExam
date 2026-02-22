@@ -72,7 +72,6 @@ class DatabaseHelper {
   }
 
   Future<void> _seedData(Database db) async {
-    // Only seed if tables are empty
     final stationCount = Sqflite.firstIntValue(
       await db.rawQuery('SELECT COUNT(*) FROM polling_stations'),
     );
@@ -270,6 +269,25 @@ class DatabaseHelper {
       where: 'report_id = ?',
       whereArgs: [reportId],
     );
+  }
+
+  Future<int> getTotalReportCount() async {
+    final db = await database;
+    final result = await db.rawQuery('SELECT COUNT(*) FROM incident_reports');
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  Future<List<Map<String, dynamic>>> getTop3Stations() async {
+    final db = await database;
+    return await db.rawQuery('''
+      SELECT polling_stations.name, COUNT(*) as total
+      FROM incident_reports
+      JOIN polling_stations
+      ON incident_reports.station_id = polling_stations.id
+      GROUP BY station_id
+      ORDER BY total DESC
+      LIMIT 3
+    ''');
   }
 
   Future<void> close() async {
