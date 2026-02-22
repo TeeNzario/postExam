@@ -1,7 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../constants/data.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import '../helper/database_helper.dart';
+import '../models/polling_station.dart';
+import '../models/violation_type.dart';
 import '../models/incident_report.dart';
 
 class CreateScreen extends StatefulWidget {
@@ -19,6 +23,26 @@ class _CreateScreenState extends State<CreateScreen> {
   final _descriptionController = TextEditingController();
   String? _imagePath;
 
+  final _db = DatabaseHelper.instance;
+  List<PollingStation> _stations = [];
+  List<ViolationType> _types = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final stations = await _db.getPollingStations();
+    final types = await _db.getViolationTypes();
+    setState(() {
+      _stations = stations;
+      _types = types;
+      _isLoading = false;
+    });
+  }
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
@@ -30,33 +54,54 @@ class _CreateScreenState extends State<CreateScreen> {
     }
   }
 
-  void _save() {
+  Future<String?> _saveImageToAssets(String sourcePath) async {
+    final appDir = await getApplicationDocumentsDirectory();
+    final assetsDir = Directory(p.join(appDir.path, 'assets'));
+    if (!await assetsDir.exists()) {
+      await assetsDir.create(recursive: true);
+    }
+    final fileName =
+        '${DateTime.now().millisecondsSinceEpoch}_${p.basename(sourcePath)}';
+    final destPath = p.join(assetsDir.path, fileName);
+    await File(sourcePath).copy(destPath);
+    return destPath;
+  }
+
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
     if (_selectedStationId == null || _selectedTypeId == null) return;
 
+    String? savedImagePath;
+    if (_imagePath != null) {
+      savedImagePath = await _saveImageToAssets(_imagePath!);
+    }
+
     final newReport = IncidentReport(
-      reportId: reports.length + 1,
+      reportId: 0, // auto-increment by SQLite
       stationId: _selectedStationId!,
       typeId: _selectedTypeId!,
       reporterName: _nameController.text.isEmpty ? null : _nameController.text,
       description: _descriptionController.text,
-      evidencePhoto: _imagePath,
+      evidencePhoto: savedImagePath,
       timestamp: DateTime.now(),
       aiResult: 'Money',
       aiConfidence: 0.70,
     );
 
-    reports.add(newReport);
-    Navigator.pop(context);
+    await _db.insertIncidentReport(newReport);
+
+    if (mounted) Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
+      appBar: AppBar(backgroundColor: Colors.white, elevation: 0),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Form(
@@ -70,14 +115,14 @@ class _CreateScreenState extends State<CreateScreen> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<int>(
-                initialValue: _selectedStationId,
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(
+                value: _selectedStationId,
+                decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 14,
                   ),
                 ),
-                items: pollingStations
+                items: _stations
                     .map(
                       (s) => DropdownMenuItem(
                         value: s.id,
@@ -98,14 +143,14 @@ class _CreateScreenState extends State<CreateScreen> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<int>(
-                initialValue: _selectedTypeId,
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(
+                value: _selectedTypeId,
+                decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 14,
                   ),
                 ),
-                items: violationTypes
+                items: _types
                     .map(
                       (v) => DropdownMenuItem(value: v.id, child: Text(v.name)),
                     )
@@ -121,8 +166,8 @@ class _CreateScreenState extends State<CreateScreen> {
               const SizedBox(height: 8),
               TextFormField(
                 controller: _nameController,
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(
+                decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 14,
                   ),
@@ -137,8 +182,8 @@ class _CreateScreenState extends State<CreateScreen> {
               TextFormField(
                 controller: _descriptionController,
                 maxLines: 5,
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.all(16),
+                decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.all(16),
                 ),
                 validator: (v) =>
                     (v == null || v.isEmpty) ? 'กรุณากรอกรายละเอียด' : null,
@@ -182,7 +227,7 @@ class _CreateScreenState extends State<CreateScreen> {
                 child: ElevatedButton(
                   onPressed: _save,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFFFFF),
+                    backgroundColor: const Color(0xFFFFFFFF),
                     foregroundColor: Colors.black,
                     elevation: 0,
                   ),

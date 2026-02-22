@@ -3,20 +3,55 @@ import '../models/violation_type.dart';
 import '../models/incident_report.dart';
 
 final List<PollingStation> pollingStations = [
-  PollingStation(id: 101, name: 'โรงเรียนวัดพระมหาธาตุ', zone: 'เขต 1', province: 'นครศรีธรรมราช'),
-  PollingStation(id: 102, name: 'เต็นท์หน้าตลาดท่าวัง', zone: 'เขต 1', province: 'นครศรีธรรมราช'),
-  PollingStation(id: 103, name: 'ศาลากลางหมู่บ้านคีรีวง', zone: 'เขต 2', province: 'นครศรีธรรมราช'),
-  PollingStation(id: 104, name: 'หอประชุมอำเภอทุ่งสง', zone: 'เขต 3', province: 'นครศรีธรรมราช'),
+  PollingStation(
+    id: 101,
+    name: 'โรงเรียนวัดพระมหาธาตุ',
+    zone: 'เขต 1',
+    province: 'นครศรีธรรมราช',
+  ),
+  PollingStation(
+    id: 102,
+    name: 'เต็นท์หน้าตลาดท่าวัง',
+    zone: 'เขต 1',
+    province: 'นครศรีธรรมราช',
+  ),
+  PollingStation(
+    id: 103,
+    name: 'ศาลากลางหมู่บ้านคีรีวง',
+    zone: 'เขต 2',
+    province: 'นครศรีธรรมราช',
+  ),
+  PollingStation(
+    id: 104,
+    name: 'หอประชุมอำเภอทุ่งสง',
+    zone: 'เขต 3',
+    province: 'นครศรีธรรมราช',
+  ),
 ];
 
 final List<ViolationType> violationTypes = [
-  ViolationType(id: 1, name: 'ซื้อสิทธิ์ขายเสียง', severity: 'High'),
-  ViolationType(id: 2, name: 'ขนคนไปลงคะแนน', severity: 'High'),
-  ViolationType(id: 3, name: 'หาเสียงเกินเวลา', severity: 'Medium'),
-  ViolationType(id: 4, name: 'ทำลายป้ายหาเสียง', severity: 'Low'),
-  ViolationType(id: 5, name: 'เจ้าหน้าที่วางตัวไม่เป็นกลาง', severity: 'High'),
+  ViolationType(
+    id: 1,
+    name: 'ซื้อสิทธิ์ขายเสียง (Buying Votes)',
+    severity: 'High',
+  ),
+  ViolationType(
+    id: 2,
+    name: 'ขนคนไปลงคะแนน (Transportation)',
+    severity: 'High',
+  ),
+  ViolationType(
+    id: 3,
+    name: 'หาเสียงเกินเวลา (Overtime Campaign)',
+    severity: 'Medium',
+  ),
+  ViolationType(id: 4, name: 'ทำลายป้ายหาเสียง (Vandalism)', severity: 'Low'),
+  ViolationType(
+    id: 5,
+    name: 'เจ้าหน้าที่วางตัวไม่เป็นกลาง (Bias Official)',
+    severity: 'High',
+  ),
 ];
-
 
 List<IncidentReport> reports = [
   IncidentReport(

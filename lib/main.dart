@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
+import 'helper/database_helper.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Initialize the database before running the app
+  await DatabaseHelper.instance.database;
   runApp(const MyApp());
 }
 
