@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import '../helper/database_helper.dart';
+import '../helper/firebase_service.dart';
 import '../models/polling_station.dart';
 import '../models/violation_type.dart';
 import '../models/incident_report.dart';
@@ -89,6 +90,7 @@ class _CreateScreenState extends State<CreateScreen> {
     );
 
     await _db.insertIncidentReport(newReport);
+    await FirebaseService.instance.insertIncidentReportToFirebase(newReport);
 
     if (mounted) Navigator.pop(context);
   }

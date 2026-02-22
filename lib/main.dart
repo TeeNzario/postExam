@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'screens/home_screen.dart';
 import 'helper/database_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Initialize the database before running the app
+  await Firebase.initializeApp();
   await DatabaseHelper.instance.database;
   runApp(const MyApp());
 }
