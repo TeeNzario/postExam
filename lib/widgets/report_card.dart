@@ -50,7 +50,10 @@ class ReportCard extends StatelessWidget {
                       style: TextStyle(fontSize: 12, color: Colors.black),
                     ),
                     const SizedBox(height: 8),
-                    ConfidenceBar(confidence: report.aiConfidence),
+                    ConfidenceBar(
+                      confidence: report.aiConfidence,
+                      aiResult: report.aiResult ?? '',
+                    ),
                   ],
                 ),
               ),

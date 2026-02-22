@@ -1,0 +1,4 @@
+0 Money
+1 Crowd
+2 Sign
+3 Car

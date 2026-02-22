@@ -227,7 +227,7 @@ class DatabaseHelper {
   Future<int> insertIncidentReport(IncidentReport report) async {
     final db = await database;
     final map = report.toMap();
-    map.remove('report_id'); // let SQLite auto-increment
+    map.remove('report_id'); 
     return await db.insert(
       'incident_reports',
       map,

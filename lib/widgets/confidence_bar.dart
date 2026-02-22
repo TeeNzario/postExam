@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 
 class ConfidenceBar extends StatelessWidget {
   final double confidence;
+  final String aiResult;
 
-  const ConfidenceBar({super.key, required this.confidence});
+  const ConfidenceBar({
+    super.key,
+    required this.confidence,
+    required this.aiResult,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +17,7 @@ class ConfidenceBar extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'ค่าความมั่นใจ',
+          'ค่าความมั่นใจ ($aiResult)',
           style: TextStyle(fontSize: 12, color: Colors.black),
         ),
         const SizedBox(height: 4),
@@ -24,9 +29,7 @@ class ConfidenceBar extends StatelessWidget {
                   value: confidence,
                   minHeight: 8,
                   backgroundColor: Colors.grey[200],
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    Colors.black,
-                  ),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.black),
                 ),
               ),
             ),

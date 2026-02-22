@@ -1,8 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:image/image.dart' as img;
+import 'package:tflite_flutter/tflite_flutter.dart';
 import '../helper/database_helper.dart';
 import '../helper/firebase_service.dart';
 import '../models/polling_station.dart';
@@ -29,6 +32,9 @@ class _CreateScreenState extends State<CreateScreen> {
   List<ViolationType> _types = [];
   bool _isLoading = true;
 
+  String _aiResult = '';
+  double _aiConfidence = 0.0;
+
   @override
   void initState() {
     super.initState();
@@ -52,7 +58,59 @@ class _CreateScreenState extends State<CreateScreen> {
       setState(() {
         _imagePath = picked.path;
       });
+      await _classifyImage(picked.path);
     }
+  }
+
+  Future<void> _classifyImage(String path) async {
+    final labelsData = await rootBundle.loadString('lib/ai/labels.txt');
+    final labels = <String>[];
+    for (final line in labelsData.split('\n')) {
+      final trimmed = line.trim();
+      if (trimmed.isNotEmpty) {
+        final parts = trimmed.split(' ');
+        labels.add(parts.length > 1 ? parts.sublist(1).join(' ') : parts[0]);
+      }
+    }
+
+    final interpreter = await Interpreter.fromAsset(
+      'lib/ai/model_unquant.tflite',
+    );
+
+    final imageBytes = File(path).readAsBytesSync();
+    final originalImage = img.decodeImage(imageBytes)!;
+    final resized = img.copyResize(originalImage, width: 224, height: 224);
+
+    var input = List.generate(
+      1,
+      (_) => List.generate(
+        224,
+        (y) => List.generate(224, (x) {
+          final pixel = resized.getPixel(x, y);
+          return [pixel.r / 255.0, pixel.g / 255.0, pixel.b / 255.0];
+        }),
+      ),
+    );
+
+    var output = List.generate(1, (_) => List.filled(labels.length, 0.0));
+
+    interpreter.run(input, output);
+    interpreter.close();
+
+    final probabilities = output[0];
+    double maxProb = probabilities[0];
+    int maxIndex = 0;
+    for (int i = 1; i < probabilities.length; i++) {
+      if (probabilities[i] > maxProb) {
+        maxProb = probabilities[i];
+        maxIndex = i;
+      }
+    }
+
+    setState(() {
+      _aiResult = labels[maxIndex];
+      _aiConfidence = maxProb;
+    });
   }
 
   Future<String?> _saveImageToAssets(String sourcePath) async {
@@ -78,15 +136,15 @@ class _CreateScreenState extends State<CreateScreen> {
     }
 
     final newReport = IncidentReport(
-      reportId: 0, // auto-increment by SQLite
+      reportId: 0,
       stationId: _selectedStationId!,
       typeId: _selectedTypeId!,
       reporterName: _nameController.text.isEmpty ? null : _nameController.text,
       description: _descriptionController.text,
       evidencePhoto: savedImagePath,
       timestamp: DateTime.now(),
-      aiResult: 'Money',
-      aiConfidence: 0.70,
+      aiResult: _aiResult.isEmpty ? null : _aiResult,
+      aiConfidence: _aiConfidence,
     );
 
     await _db.insertIncidentReport(newReport);
