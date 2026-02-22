@@ -42,7 +42,7 @@ class _ListScreenState extends State<ListScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('ยืนยันการลบ'),
-        content: const Text('Are you sure you want to delete this report?'),
+        content: const Text('ต้องการจะลบรายการนี้จริงหรือเปล่า'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -50,7 +50,7 @@ class _ListScreenState extends State<ListScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('ลบ', style: TextStyle(color: Colors.red)),
+            child: const Text('ลบจริง', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
