@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "864832882084",
+    "project_id": "electionwatch-821c1",
+    "storage_bucket": "electionwatch-821c1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:864832882084:android:23a10348e632735d496d31",
+        "android_client_info": {
+          "package_name": "com.example.finale66131319"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgXVcKuaYT298TWWc9GiqHG4qkMhzHzlg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

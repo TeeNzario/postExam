@@ -290,6 +290,24 @@ class DatabaseHelper {
     ''');
   }
 
+  Future<bool> checkDuplicateStationName(String name, int excludeId) async {
+    final db = await database;
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) FROM polling_stations WHERE name = ? AND id != ?',
+      [name, excludeId],
+    );
+    return (Sqflite.firstIntValue(result) ?? 0) > 0;
+  }
+
+  Future<int> countReportsByStation(int stationId) async {
+    final db = await database;
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) FROM incident_reports WHERE station_id = ?',
+      [stationId],
+    );
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
   Future<void> close() async {
     final db = await database;
     db.close();
