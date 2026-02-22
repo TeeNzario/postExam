@@ -1,21 +1,27 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/incident_report.dart';
-import '../constants/data.dart';
 import 'confidence_bar.dart';
 
 class ReportCard extends StatelessWidget {
   final IncidentReport report;
+  final String stationName;
+  final String typeName;
+  final VoidCallback? onDelete;
 
-  const ReportCard({super.key, required this.report});
+  const ReportCard({
+    super.key,
+    required this.report,
+    required this.stationName,
+    required this.typeName,
+    this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final violationType = violationTypes.firstWhere(
-      (v) => v.id == report.typeId,
-    );
     final displayName =
         (report.reporterName == null || report.reporterName!.isEmpty)
-        ? 'พลเมอืงดี'
+        ? 'พลเมืองดี'
         : report.reporterName!;
 
     return GestureDetector(
@@ -31,14 +37,9 @@ class ReportCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Text(typeName, style: const TextStyle(fontSize: 18)),
                     Text(
-                      violationType.name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                      ),
-                    ),
-                    Text(
-                      displayName,
+                      '$displayName • $stationName',
                       style: TextStyle(fontSize: 13, color: Colors.black),
                     ),
                     const SizedBox(height: 4),
@@ -55,19 +56,22 @@ class ReportCard extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               ClipRRect(
-                child: report.evidencePhoto != null
-                    ? Image.asset(
-                        report.evidencePhoto!,
+                child:
+                    report.evidencePhoto != null &&
+                        File(report.evidencePhoto!).existsSync()
+                    ? Image.file(
+                        File(report.evidencePhoto!),
                         width: 90,
                         height: 90,
                         fit: BoxFit.cover,
                       )
-                    : Container(
-                        width: 90,
-                        height: 90,
-                        color: Colors.grey[300],
-                      ),
+                    : Container(width: 90, height: 90, color: Colors.grey[300]),
               ),
+              if (onDelete != null)
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: onDelete,
+                ),
             ],
           ),
         ),

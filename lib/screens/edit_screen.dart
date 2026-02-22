@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../constants/data.dart';
+import '../helper/database_helper.dart';
+import '../models/incident_report.dart';
 import '../widgets/report_card.dart';
 import 'create_screen.dart';
 
@@ -11,15 +12,41 @@ class EditScreen extends StatefulWidget {
 }
 
 class _EditScreenState extends State<EditScreen> {
-  String? selectedSeverity;
-  int? selectedTypeId;
+  final _db = DatabaseHelper.instance;
+  List<IncidentReport> _reports = [];
+  Map<int, String> _stationNames = {};
+  Map<int, String> _typeNames = {};
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final reports = await _db.getIncidentReports();
+    final stations = await _db.getPollingStations();
+    final types = await _db.getViolationTypes();
+
+    setState(() {
+      _reports = reports;
+      _stationNames = {for (var s in stations) s.id: s.name};
+      _typeNames = {for (var t in types) t.id: t.name};
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("แก้ไขรายการแจ้งเหตุ"),
-       backgroundColor: Colors.white,
+        backgroundColor: Colors.white,
         elevation: 0,
       ),
       body: SafeArea(
@@ -29,11 +56,13 @@ class _EditScreenState extends State<EditScreen> {
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.only(bottom: 80),
-                itemCount: 3,
+                itemCount: _reports.length,
                 itemBuilder: (context, index) {
-                  final report = reports[index];
+                  final report = _reports[index];
                   return ReportCard(
                     report: report,
+                    stationName: _stationNames[report.stationId] ?? 'ไม่ทราบ',
+                    typeName: _typeNames[report.typeId] ?? 'ไม่ทราบ',
                   );
                 },
               ),
@@ -52,7 +81,7 @@ class _EditScreenState extends State<EditScreen> {
                 context,
                 MaterialPageRoute(builder: (_) => const CreateScreen()),
               );
-              setState(() {});
+              _loadData();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
@@ -71,5 +100,4 @@ class _EditScreenState extends State<EditScreen> {
       ),
     );
   }
-
 }
